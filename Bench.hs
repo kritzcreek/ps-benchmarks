@@ -1,11 +1,11 @@
-#!/usr/bin/env stack
--- stack --install-ghc runghc --package turtle
-
 {-# LANGUAGE OverloadedStrings #-}
+
+module Main where
 
 import Turtle
 
 import Control.Monad
+import Control.Applicative
 import qualified Data.Text as T
 
 data HeapCapture = HC | HY
@@ -16,20 +16,17 @@ data BenchTarget = BenchTarget
   , heapProfiles :: [HeapCapture]
   }
 
-benchRun :: BenchTarget -> IO ()
-benchRun bt = do
+benchRun :: Bool -> BenchTarget -> IO ()
+benchRun noDeps bt = do
   echo ("Benchmarking: " <> T.pack (show (name bt)))
   cd (name bt)
 
-  rmBowerComponents
   rmOutput
-  bowerInstall
+  unless noDeps (rmBowerComponents <* bowerInstall)
 
-  proc "psc" (map quote (globs bt) <> ["+RTS", "-p", "-RTS"]) mempty
+  proc "psc" (globs bt <> ["+RTS", "-p", "-RTS"]) empty
 
   return ()
-
-quote s = "\"" <> s <> "\""
 
 rmBowerComponents =
   whenM (testdir "bower_components") (rmtree "bower_components")
@@ -38,7 +35,7 @@ rmOutput =
   whenM (testdir "output") (rmtree "output")
 
 bowerInstall =
-  shell "bower install" mempty
+  shell "bower install" empty
 
 pscid :: BenchTarget
 pscid = BenchTarget
@@ -52,9 +49,12 @@ whenM x f = do
   when a f
 
 main = do
-  echo "Benchmark some shit yo."
-  benchRun pscid
+  echo "Benchmarking..."
+  opts <- options "Options for benchmarking" parser
+  benchRun opts pscid
 
+parser :: Parser Bool
+parser = switch "no-deps" 'd' "Whether to not reinstall bower dependencies"
 
 -- Command to build psc with profiling:
 -- stack build --executable-profiling --library-profiling --ghc-options="-fprof-auto -rtsopts"
