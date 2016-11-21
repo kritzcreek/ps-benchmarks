@@ -1,0 +1,3 @@
+[submodule "pscid"]
+	path = pscid
+	url = git@github.com:kRITZCREEK/pscid.git
