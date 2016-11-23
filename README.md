@@ -17,6 +17,12 @@
 After cloning the submodules:
 
 ```sh
+git submodule update --init --recursive
+```
+
+You can run the bench script like so:
+
+```sh
 stack build && stack exec -- ps-bench
 ```
 
