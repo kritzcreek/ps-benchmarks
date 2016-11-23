@@ -1,3 +1,9 @@
 [submodule "pscid"]
 	path = pscid
 	url = git@github.com:kRITZCREEK/pscid.git
+[submodule "slamdata"]
+	path = slamdata
+	url = git@github.com:slamdata/slamdata.git
+[submodule "purescript-halogen"]
+	path = purescript-halogen
+	url = git@github.com:slamdata/purescript-halogen.git

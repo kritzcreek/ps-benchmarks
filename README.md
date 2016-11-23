@@ -23,3 +23,11 @@ stack build && stack exec -- ps-bench
 On subsequent runs add the `-d` flag to not reinstall the dependencies with
 bower all the time.
 
+The benchmarking results can be found inside the respective project directories
+as `psc.prof` and (if a heap capture was chosen) `image.jpg`.
+
+## Tweaking the bench script
+
+Inside `Bench.hs`, either modify the existing `BenchTarget`s or add new ones.
+Remember to also add or comment out `benchRun`s inside `main` as needed.
+
