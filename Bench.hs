@@ -10,6 +10,11 @@ import qualified Data.Text as T
 
 data HeapCapture = HC | HY
 
+hcToString :: HeapCapture -> Text
+hcToString hc = case hc of
+  HC -> "-hc"
+  HY -> "-hy"
+
 data BenchTarget = BenchTarget
   { name :: Turtle.FilePath
   , globs :: [Text]
@@ -24,9 +29,16 @@ benchRun noDeps bt = do
   rmOutput
   unless noDeps (rmBowerComponents <* bowerInstall)
 
-  proc "psc" (globs bt <> ["+RTS", "-p", "-RTS"]) empty
+  -- psc (globs bt) Nothing
+  psc (globs bt) (Just HC)
+  hp2ps "psc.hp"
+  convert "psc.ps" "image.jpg"
 
   return ()
+
+psc globs' hc = do
+  proc "psc" (globs' <> ["+RTS", "-p", maybe "" hcToString hc , "-RTS"]) empty
+  rmOutput
 
 rmBowerComponents =
   whenM (testdir "bower_components") (rmtree "bower_components")
@@ -53,6 +65,12 @@ main = do
   opts <- options "Options for benchmarking" parser
   benchRun opts pscid
 
+hp2ps i =
+  proc "stack" (["exec", "--", "hp2ps", "-c", i]) empty
+
+convert i o =
+  proc "convert" (["-density", "600", i, o]) empty
+
 parser :: Parser Bool
 parser = switch "no-deps" 'd' "Whether to not reinstall bower dependencies"
 
@@ -60,7 +78,6 @@ parser = switch "no-deps" 'd' "Whether to not reinstall bower dependencies"
 -- stack build --executable-profiling --library-profiling --ghc-options="-fprof-auto -rtsopts"
 
 -- convert -density 600 results-master/pscid-hc.ps image.jpg
-
 -- ### PSCID
 -- pushd pscid
 -- rm -r bower_components output
